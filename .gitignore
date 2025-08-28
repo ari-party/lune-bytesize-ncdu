@@ -1,2 +1,6 @@
 .luaurc
 lune
+
+*.rbxl
+*.rbxlx
+*.json
