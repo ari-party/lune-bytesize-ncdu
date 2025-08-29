@@ -25,20 +25,22 @@ local output = {
 	},
 }
 
-function indexInstance(instance: roblox.Instance, noClassNameSuffix: boolean?)
-	local isDirectory = #instance:GetChildren() > 0
-
+function indexInstance(instance: roblox.Instance, forceNoClassNameSuffix: boolean?)
+	local name = instance.Name
+	local className = instance.ClassName
 	local byteSize = roblox.getByteSize(instance)
+
 	local infoBlock = {
-		name = if noClassNameSuffix then instance.Name else `{instance.Name} ({instance.ClassName})`,
+		name = if name == className or forceNoClassNameSuffix then name else `{name} ({className})`,
 		dsize = byteSize,
 		asize = byteSize,
 	}
 
-	if isDirectory then
+	local children = instance:GetChildren()
+	if #children > 0 then
 		local info = { infoBlock }
 
-		for _, child in instance:GetChildren() do
+		for _, child in children do
 			table.insert(info, indexInstance(child))
 		end
 
