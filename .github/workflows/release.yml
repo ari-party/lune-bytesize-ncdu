@@ -4,22 +4,26 @@ on:
 
 jobs:
   release:
-    name: release ${{ matrix.target }}
     strategy:
-      fail-fast: false
       matrix:
-        include:
-          - target: x86_64-pc-windows-gnu
-            archive: zip
-            os: ubuntu-latest
-          - target: x86_64-unknown-linux-musl
-            archive: tar.gz tar.xz tar.zst
-            os: ubuntu-latest
-          - target: x86_64-apple-darwin
-            archive: zip
-            os: macos-latest
+        platform:
+          - os-name: FreeBSD-x86_64
+            runs-on: ubuntu-24.04
+            target: x86_64-unknown-freebsd
 
-    runs-on: ${{ matrix.os }}
+          - os-name: Linux-x86_64
+            runs-on: ubuntu-24.04
+            target: x86_64-unknown-linux-musl
+
+          - os-name: Windows-x86_64
+            runs-on: windows-latest
+            target: x86_64-pc-windows-msvc
+
+          - os-name: macOS-x86_64
+            runs-on: macOS-latest
+            target: x86_64-apple-darwin
+
+    runs-on: ${{ matrix.platform.runs-on }}
 
     steps:
       - uses: actions/checkout@v4
@@ -27,11 +31,15 @@ jobs:
       - name: Update submodules
         run: git submodule update --init --recursive
 
-      - name: Compile and release
-        uses: rust-build/rust-build.action@v1.4.5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build binary
+        uses: houseabsolute/actions-rust-cross@v1
         with:
-          RUSTTARGET: ${{ matrix.target }}
-          ARCHIVE_TYPES: ${{ matrix.archive }}
-          TOOLCHAIN_VERSION: 1.89.0
+          command: build
+          target: ${{ matrix.platform.target }}
+          args: "--locked --release"
+
+      - name: Publish artifacts and release
+        uses: houseabsolute/actions-rust-release@v0
+        with:
+          executable-name: rbx-bytesize-ncdu
+          target: ${{ matrix.platform.target }}
