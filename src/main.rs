@@ -180,6 +180,7 @@ fn main() {
 
     let root_ref = dom.root_ref();
     let root_instance = dom.get_by_ref(root_ref).unwrap();
+    let instance_byte_sizes = dom.instance_byte_sizes.as_ref().unwrap();
 
     if is_place {
         let target_services = [
@@ -211,12 +212,7 @@ fn main() {
                         }
                     })
                     .map(|&service_ref| {
-                        index_instance(
-                            &dom,
-                            service_ref,
-                            dom.instance_byte_sizes.as_ref().unwrap(),
-                            &progress_bar
-                        )
+                        index_instance(&dom, service_ref, instance_byte_sizes, &progress_bar)
                     })
             })
             .collect();
@@ -230,14 +226,7 @@ fn main() {
         let children: Vec<NcduEntry> = root_instance
             .children()
             .par_iter()
-            .map(|&child_ref|
-                index_instance(
-                    &dom,
-                    child_ref,
-                    dom.instance_byte_sizes.as_ref().unwrap(),
-                    &progress_bar
-                )
-            )
+            .map(|&child_ref| index_instance(&dom, child_ref, instance_byte_sizes, &progress_bar))
             .collect();
 
         let root_entry = NcduEntry::with_children("Model".to_string(), 0, 0, children);
