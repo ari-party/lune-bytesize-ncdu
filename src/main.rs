@@ -99,6 +99,7 @@ fn index_instance(
             .map(|&child_ref| index_instance(dom, child_ref, instance_byte_sizes, progress_bar))
             .collect();
 
+        progress_bar.inc(1);
         NcduEntry::with_children(display_name, dsize, asize, child_entries)
     }
 }
