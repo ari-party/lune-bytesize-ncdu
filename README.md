@@ -50,3 +50,5 @@ ncdu -f output.json
 # or
 gdu -f output.json
 ```
+
+<img width="1113" height="626" alt="1756577647_vte6kn9iTW" src="https://github.com/user-attachments/assets/216ea75d-0cb8-4250-add4-722f06ebe355" />
