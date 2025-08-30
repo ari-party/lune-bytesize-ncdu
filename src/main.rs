@@ -197,11 +197,10 @@ fn main() {
             "TextChatService",
         ];
 
-        let mut service_entries = Vec::new();
-
-        for service_name in &target_services {
-            if
-                let Some(service_ref) = root_instance
+        let service_entries: Vec<NcduEntry> = target_services
+            .par_iter()
+            .filter_map(|service_name| {
+                root_instance
                     .children()
                     .iter()
                     .find(|&&child_ref| {
@@ -211,16 +210,16 @@ fn main() {
                             false
                         }
                     })
-            {
-                let service_entry = index_instance(
-                    &dom,
-                    *service_ref,
-                    dom.instance_byte_sizes.as_ref().unwrap(),
-                    &progress_bar
-                );
-                service_entries.push(service_entry);
-            }
-        }
+                    .map(|&service_ref| {
+                        index_instance(
+                            &dom,
+                            service_ref,
+                            dom.instance_byte_sizes.as_ref().unwrap(),
+                            &progress_bar
+                        )
+                    })
+            })
+            .collect();
 
         let root_entry = NcduEntry::with_children("Game".to_string(), 0, 0, service_entries);
 
