@@ -1,3 +1,5 @@
+# rbx-bytesize-ncdu
+
 Rust project that outputs a [ncdu JSON file](https://dev.yorhel.nl/ncdu/jsonfmt) from a Roblox place or model file.
 This allows you to analyze your place or model file to figure out what instances are the largest.
 
