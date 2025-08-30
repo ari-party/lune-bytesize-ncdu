@@ -1,0 +1,16 @@
+[package]
+name = "rbx-bytesize-ncdu"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+[dependencies]
+rbx_binary = { path = "./rbx-dom-bytes/rbx_binary" }
+rbx_dom_weak = { path = "./rbx-dom-bytes/rbx_dom_weak" }
+rbx_types = { path = "./rbx-dom-bytes/rbx_types" }
+ahash = "0.8"
+serde_json = "1.0"
+chrono = { version = "0.4", features = ["serde"] }
+rayon = "1.8"
+indicatif = "0.17"

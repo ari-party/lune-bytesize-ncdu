@@ -1,6 +1,9 @@
-.luaurc
-lune
+# Cargo
+/target
+**/*.rs.bk
+Cargo.lock
 
+# Development
 *.rbxl
 *.rbxlx
 *.rbxm
