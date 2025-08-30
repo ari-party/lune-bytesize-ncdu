@@ -43,3 +43,4 @@ jobs:
         with:
           executable-name: rbx-bytesize-ncdu
           target: ${{ matrix.platform.target }}
+          changes-file: ""
