@@ -109,8 +109,8 @@ fn main() {
 
     if args.len() != 3 {
         eprintln!("Usage: {} <input_file> <output_file>", args[0]);
-        eprintln!("  input_file:  .rbxl, .rbxlx, .rbxm, or .rbxmx file");
-        eprintln!("  output_file: .json file for ncdu");
+        eprintln!("  input_file:  .rbxl or .rbxm file");
+        eprintln!("  output_file: .json ncdu file");
         exit(1);
     }
 
@@ -129,11 +129,11 @@ fn main() {
 
     let path_parts: Vec<&str> = input_path.split('.').collect();
     let extension = path_parts.last().unwrap_or(&"");
-    let is_place = extension == &"rbxl" || extension == &"rbxlx";
-    let is_model = extension == &"rbxm" || extension == &"rbxmx";
+    let is_place = extension == &"rbxl";
+    let is_model = extension == &"rbxm";
 
     if !is_place && !is_model {
-        eprintln!("Error: File must be a place (.rbxl/.rbxlx) or model (.rbxm/.rbxmx)");
+        eprintln!("Error: File must be a place (.rbxl) or model (.rbxm)");
         exit(1);
     }
 
