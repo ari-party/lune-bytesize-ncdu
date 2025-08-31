@@ -1,12 +1,16 @@
 use std::{ env, fs::File, io::BufReader, path::Path, process::exit };
 
-use rbx_binary::{ Deserializer, Serializer };
+use rbx_binary::{ Deserializer };
 use rbx_dom_weak::WeakDom;
 use rbx_types::Ref;
 use serde_json::{ json, Value };
 use rayon::prelude::*;
 use indicatif::{ ProgressBar, ProgressStyle };
 use ahash::HashMap;
+
+use crate::serializer::serialize_instance_size;
+
+mod serializer;
 
 #[derive(Debug)]
 struct NcduEntry {
@@ -57,23 +61,10 @@ impl NcduEntry {
     }
 }
 
-fn calculate_serialized_size(dom: &WeakDom, instance_ref: Ref) -> u64 {
-    let _instance = dom.get_by_ref(instance_ref).unwrap();
-
-    let mut buffer = Vec::new();
-    let serializer = Serializer::new();
-
-    if let Ok(()) = serializer.serialize(&mut buffer, dom, &[instance_ref]) {
-        buffer.len() as u64
-    } else {
-        0
-    }
-}
-
 fn index_instance(
     dom: &WeakDom,
-    instance_ref: Ref,
     instance_byte_sizes: &HashMap<i32, usize>,
+    instance_ref: Ref,
     progress_bar: &ProgressBar
 ) -> NcduEntry {
     let instance = dom.get_by_ref(instance_ref).unwrap();
@@ -81,7 +72,7 @@ fn index_instance(
     let class_name = &instance.class;
 
     let dsize = instance.byte_size(instance_byte_sizes) as u64;
-    let asize = calculate_serialized_size(dom, instance_ref);
+    let asize = serialize_instance_size(dom, &[instance_ref]);
 
     let display_name = if name == class_name.as_str() {
         name.to_string()
@@ -96,7 +87,7 @@ fn index_instance(
     } else {
         let child_entries: Vec<NcduEntry> = children
             .par_iter()
-            .map(|&child_ref| index_instance(dom, child_ref, instance_byte_sizes, progress_bar))
+            .map(|&child_ref| index_instance(dom, instance_byte_sizes, child_ref, progress_bar))
             .collect();
 
         progress_bar.inc(1);
@@ -212,7 +203,7 @@ fn main() {
                         }
                     })
                     .map(|&service_ref| {
-                        index_instance(&dom, service_ref, instance_byte_sizes, &progress_bar)
+                        index_instance(&dom, instance_byte_sizes, service_ref, &progress_bar)
                     })
             })
             .collect();
@@ -226,7 +217,7 @@ fn main() {
         let children: Vec<NcduEntry> = root_instance
             .children()
             .par_iter()
-            .map(|&child_ref| index_instance(&dom, child_ref, instance_byte_sizes, &progress_bar))
+            .map(|&child_ref| index_instance(&dom, instance_byte_sizes, child_ref, &progress_bar))
             .collect();
 
         let root_entry = NcduEntry::with_children("Model".to_string(), 0, 0, children);
