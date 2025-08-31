@@ -1,18 +1,13 @@
 use rbx_binary::{ InnerError, Serializer, SerializerState };
-use rbx_dom_weak::{ WeakDom };
-use rbx_types::{ Ref, SharedString };
+use rbx_dom_weak::{ Instance, WeakDom };
+use rbx_types::{ SharedString };
 
 fn custom_add_instances<'dom, 'db>(
-    dom: &'dom WeakDom,
     serializer_state: &mut SerializerState<'dom, 'db, &mut Vec<u8>>,
-    refs: &[Ref]
+    instances: &[&'dom Instance]
 ) -> Result<(), InnerError> {
-    for referent in refs {
-        let instance = dom.get_by_ref(*referent).ok_or(InnerError::InvalidInstanceId {
-            referent: *referent,
-        })?;
-
-        serializer_state.relevant_instances.push(*referent);
+    for instance in instances {
+        serializer_state.relevant_instances.push(instance.referent());
         serializer_state.collect_type_info(instance)?;
     }
 
@@ -24,13 +19,13 @@ fn custom_add_instances<'dom, 'db>(
     Ok(())
 }
 
-pub fn serialize_instance_size(dom: &WeakDom, refs: &[Ref]) -> u64 {
+pub fn serialize_instance_size(dom: &WeakDom, instance: &Instance) -> u64 {
     let mut writer = Vec::new();
     let serializer = Serializer::new();
     let mut serializer_state = SerializerState::new(&serializer, dom, &mut writer);
 
     let result: Result<(), InnerError> = (|| {
-        custom_add_instances(dom, &mut serializer_state, refs)?;
+        custom_add_instances(&mut serializer_state, &[instance])?;
         serializer_state.generate_referents();
         serializer_state.serialize_shared_strings()?;
         serializer_state.serialize_instances()?;

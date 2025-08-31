@@ -72,7 +72,7 @@ fn index_instance(
     let class_name = &instance.class;
 
     let dsize = instance.byte_size(instance_byte_sizes) as u64;
-    let asize = serialize_instance_size(dom, &[instance_ref]);
+    let asize = serialize_instance_size(dom, instance);
 
     let display_name = if name == class_name.as_str() {
         name.to_string()
